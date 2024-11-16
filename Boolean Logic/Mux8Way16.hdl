@@ -1,0 +1,33 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/1/Mux8Way16.hdl
+/**
+ * 8-way 16-bit multiplexor:
+ * out = a if sel = 000
+ *       b if sel = 001
+ *       c if sel = 010
+ *       d if sel = 011
+ *       e if sel = 100
+ *       f if sel = 101
+ *       g if sel = 110
+ *       h if sel = 111
+ */
+CHIP Mux8Way16 {
+    IN a[16], b[16], c[16], d[16],
+       e[16], f[16], g[16], h[16],
+       sel[3];
+    OUT out[16];
+
+    PARTS:
+    // First stage: Use the two least significant bits of sel (sel[0..1]) to select one of four 16-bit inputs in each group.
+    // - Mux4Way16 on the left selects among inputs a, b, c, d and outputs the result to candidate1.
+    // - Mux4Way16 on the right selects among inputs e, f, g, h and outputs the result to candidate2.
+    Mux4Way16(a=a, b=b, c=c, d=d, sel=sel[0..1], out=candidate1);
+    Mux4Way16(a=e, b=f, c=g, d=h, sel=sel[0..1], out=candidate2);
+
+    // Second stage: Use the most significant bit of sel (sel[2]) to select between the two candidates.
+    // - If sel[2] = 0, output is set to candidate1 (output from the left Mux4Way16).
+    // - If sel[2] = 1, output is set to candidate2 (output from the right Mux4Way16).
+    Mux16(a=candidate1, b=candidate2, sel=sel[2], out=out);
+}

@@ -1,0 +1,31 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/1/DMux8Way.hdl
+/**
+ * 8-way demultiplexor:
+ * [a, b, c, d, e, f, g, h] = [in, 0,  0,  0,  0,  0,  0,  0] if sel = 000
+ *                            [0, in,  0,  0,  0,  0,  0,  0] if sel = 001
+ *                            [0,  0, in,  0,  0,  0,  0,  0] if sel = 010
+ *                            [0,  0,  0, in,  0,  0,  0,  0] if sel = 011
+ *                            [0,  0,  0,  0, in,  0,  0,  0] if sel = 100
+ *                            [0,  0,  0,  0,  0, in,  0,  0] if sel = 101
+ *                            [0,  0,  0,  0,  0,  0, in,  0] if sel = 110
+ *                            [0,  0,  0,  0,  0,  0,  0, in] if sel = 111
+ */
+CHIP DMux8Way {
+    IN in, sel[3];
+    OUT a, b, c, d, e, f, g, h;
+
+    PARTS:
+    // First stage: Use the most significant bit (sel[2]) to decide between two groups
+    // - If sel[2] = 0, direct input to the first DMux4Way for outputs a-d.
+    // - If sel[2] = 1, direct input to the second DMux4Way for outputs e-h.
+    DMux(in=in, sel=sel[2], a=group1, b=group2);
+
+    // Second stage: Use sel[1..0] to select the specific output within each group
+    // - For group1 (a-d), use sel[1..0] to route to a, b, c, or d.
+    // - For group2 (e-h), use sel[1..0] to route to e, f, g, or h.
+    DMux4Way(in=group1, sel=sel[0..1], a=a, b=b, c=c, d=d);
+    DMux4Way(in=group2, sel=sel[0..1], a=e, b=f, c=g, d=h);
+}
