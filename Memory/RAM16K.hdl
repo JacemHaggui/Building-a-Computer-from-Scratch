@@ -1,0 +1,24 @@
+/**
+ * Memory of 16K (16384) 16-bit registers.
+ * If `load` is asserted, the value of the register selected by
+ * `address` is set to `in`. Otherwise, the value does not change.
+ * The value of the selected register is emitted by `out`.
+ */
+
+CHIP RAM16K {
+    IN in[16], load, address[14];
+    OUT out[16];
+
+    PARTS:
+    // Use the most significant 2 bits of the address (bits 12 and 13) to select one of 4 RAM4K modules.
+    DMux4Way(in=load, sel=address[12..13], a=ram1, b=ram2, c=ram3, d=ram4);
+
+    // Selecting which register in each ram module.
+    RAM4K(in=in, load=ram1, address=address[0..11], out=ram1out);
+    RAM4K(in=in, load=ram2, address=address[0..11], out=ram2out);
+    RAM4K(in=in, load=ram3, address=address[0..11], out=ram3out);
+    RAM4K(in=in, load=ram4, address=address[0..11], out=ram4out);
+
+    // Use a multiplexer to select the output of the appropriate RAM4K module based on the most significant 2 bits of the address.
+    Mux4Way16(a=ram1out, b=ram2out, c=ram3out, d=ram4out, sel=address[12..13], out=out);
+}
