@@ -1,0 +1,27 @@
+/**
+ * Memory of 512 16-bit registers.
+ * If load is asserted, the value of the register selected by
+ * address is set to in; Otherwise, the value does not change.
+ * The value of the selected register is emitted by out.
+ */
+CHIP RAM512 {
+    IN in[16], load, address[9];
+    OUT out[16];
+
+    PARTS:
+    // Use the most significant 3 bits of the address (bits 6 to 8) to select one of 8 RAM64 modules.
+    DMux8Way(in=load, sel=address[6..8], a=ram1, b=ram2, c=ram3, d=ram4, e=ram5, f=ram6, g=ram7, h=ram8);
+
+    // Choosing the target register of each RAM module
+    RAM64(in=in, load=ram1, address=address[0..5], out=ram1out);
+    RAM64(in=in, load=ram2, address=address[0..5], out=ram2out);
+    RAM64(in=in, load=ram3, address=address[0..5], out=ram3out);
+    RAM64(in=in, load=ram4, address=address[0..5], out=ram4out);
+    RAM64(in=in, load=ram5, address=address[0..5], out=ram5out);
+    RAM64(in=in, load=ram6, address=address[0..5], out=ram6out);
+    RAM64(in=in, load=ram7, address=address[0..5], out=ram7out);
+    RAM64(in=in, load=ram8, address=address[0..5], out=ram8out);
+
+    // Use a multiplexer to select the output of the appropriate RAM64 module based on the most significant 3 bits of the address.
+    Mux8Way16(a=ram1out, b=ram2out, c=ram3out, d=ram4out, e=ram5out, f=ram6out, g=ram7out, h=ram8out, sel=address[6..8], out=out);
+}
