@@ -1,0 +1,28 @@
+/**
+ * A 16-bit counter.
+ * if      reset(t): out(t+1) = 0
+ * else if load(t):  out(t+1) = in(t)
+ * else if inc(t):   out(t+1) = out(t) + 1
+ * else              out(t+1) = out(t)
+ */
+CHIP PC {
+    IN in[16], reset, load, inc;
+    OUT out[16];
+    
+    PARTS:
+    // Increment the current value (loop) by 1 if inc is true
+    Inc16(in=loop, out=loopincr);
+
+    // Select between the current value (loop) and the incremented value (loopincr) based on inc
+    Mux16(a=loop, b=loopincr, sel=inc, out=i);
+    
+    // Select between the incremented/unchanged value (i) and the input value (in) based on load
+    Mux16(a=i, b=in, sel=load, out=l);
+    
+    // Reset the output to 0 (false) if reset is true; otherwise, pass the value from the previous step (l)
+    Mux16(a=l, b=false, sel=reset, out=r);
+
+    // Store the final value (r) in the Register to preserve it for the next clock cycle
+    // Connect the Register's output back to the loop for use in the next computation
+    Register(in=r, load=true, out=out, out=loop);    
+}
