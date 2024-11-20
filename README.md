@@ -1,7 +1,16 @@
-# Building-a-Computer-from-Scratch
+# Building a Computer from Scratch  
 
-This is my work for the project-based course [NAND2TETRIS.](https://www.nand2tetris.org)
+This repository contains my work and progress for the [Nand2Tetris](https://www.nand2tetris.org) course, a project-based journey from building basic NAND logic gates to creating a fully functional computer capable of running Tetris.  
 
-I have decided to follow along the journey from NAND logic gates to Tetris and document my progress and work on the projects here.
+## About the Course  
+Nand2Tetris is a hands-on course that takes you through the fundamental concepts of computer science and hardware engineering. By the end, participants will have designed and implemented a computer from scratch, including its hardware architecture, machine language, assembler, virtual machine, and high-level programming language.  
 
-The code was written by me as my solutions for the assignements.
+## My Progress  
+In this repository, I have documented my solutions to the course's assignments, along with comments explaining my approach. Each folder corresponds to a specific project in the course and contains:  
+- **Code**: My implementation of the assigned tasks.  
+- **Documentation**: Notes and explanations of my approach.   
+
+## Acknowledgments  
+This work represents my learning journey and solutions. I encourage anyone interested in understanding computer science at its core to explore [Nand2Tetris](https://www.nand2tetris.org).  
+
+Feel free to explore the repository and reach out if you have any questions or suggestions.  
