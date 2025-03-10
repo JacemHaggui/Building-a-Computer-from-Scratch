@@ -1,0 +1,50 @@
+CHIP Memory {
+    IN in[16], load, address[15];
+    OUT out[16];
+
+    PARTS:
+        // Step 1: Address Decoding
+        //============================================================================== 
+        // Decode address to select between RAM (0x0000-0x3FFF) or I/O (0x4000-0x6000)  
+        DMux(in=load, sel=address[14], a=ramload, b=skload);  
+        // address[14] selects RAM (ramload) or I/O (skload)
+
+        DMux(in=skload, sel=address[13], a=sload, b=nothing);  
+        // address[13] further splits I/O region: screen (sload) or keyboard (nothing)
+
+        // Step 2: Memory Components
+        //==============================================================================
+
+        RAM16K(in=in, load=ramload, address=address[0..13], out=ramout);  
+        // RAM: Writes to address[0..13] if ramload is 1, outputs value to ramout
+
+        Screen(in=in, load=sload, address=address[0..12], out=screenout);  
+        // Screen: Writes to address[0..12] if sload is 1, outputs value to screenout
+
+        // Step 3: Memory-Mapped I/O
+        //==============================================================================
+
+        Keyboard(out=kbd);  
+        // Keyboard: Always read-only, outputting state to kbd
+
+        // Validate if address is for the keyboard (0x6000)
+        Or8Way(in=address[0..7], out=notkbd1);  
+        // Check if address[0..7] is zero (keyboard address)
+
+        Or8Way(in[0..4]=address[8..12], in[5..7]=false, out=notkbd2);  
+        // Check if address[8..12] is non-zero (invalid for keyboard)
+
+        Or(a=notkbd1, b=notkbd2, out=notkbd);  
+        // If either check is non-zero, notkbd = 1 (invalid for keyboard)
+
+        Mux16(a=kbd, b=false, sel=notkbd, out=kbdout);  
+        // If address is valid for keyboard, output kbd; else, output false
+
+        // Step 4: Selecting Final Output
+        //==============================================================================
+        Mux16(a=ramout, b=outsk, sel=address[14], out=out);  
+        // Select RAM or I/O based on address[14]
+
+        Mux16(a=screenout, b=kbdout, sel=address[13], out=outsk);  
+        // Select Screen or Keyboard based on address[13]
+}

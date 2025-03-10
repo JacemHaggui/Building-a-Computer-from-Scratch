@@ -1,0 +1,81 @@
+/**
+ * The Hack Central Processing unit (CPU).
+ * Parses the binary code in the instruction input and executes it according to the
+ * Hack machine language specification. In the case of a C-instruction, computes the
+ * function specified by the instruction. If the instruction specifies to read a memory
+ * value, the inM input is expected to contain this value. If the instruction specifies
+ * to write a value to the memory, sets the outM output to this value, sets the addressM
+ * output to the target address, and asserts the writeM output (when writeM = 0, any
+ * value may appear in outM).
+ * If the reset input is 0, computes the address of the next instruction and sets the
+ * pc output to that value. If the reset input is 1, sets pc to 0.
+ * Note: The outM and writeM outputs are combinational: they are affected by the
+ * instruction's execution during the current cycle. The addressM and pc outputs are
+ * clocked: although they are affected by the instruction's execution, they commit to
+ * their new values only in the next cycle.
+ */
+
+CHIP CPU {
+
+    IN  inM[16],         // M value input  (M = contents of RAM[A])
+        instruction[16], // Instruction for execution
+        reset;           // Signals whether to re-start the current
+                         // program (reset==1) or continue executing
+                         // the current program (reset==0).
+
+    OUT outM[16],        // M value output
+        writeM,          // Write to M? 
+        addressM[15],    // Address in data memory (of M)
+        pc[15];          // address of next instruction
+
+    PARTS:
+        // Deciding wether the instruction is an A instruction or C instruction
+        Mux16(a=instruction,b=ALUout,sel=instruction[15],out=Ain);
+
+        Not(in=instruction[15],out=notinstruction);
+
+        // RegisterA 
+        // When instruction[15] = 0, it is @value means A should load value
+        // Instruction[5] = 1 means that register A is the destination
+        // An A instruction modifies the A register
+        // A C instruction also modifies the A register is the destination is A
+        Or(a=notinstruction,b=instruction[5],out=loadA);//d1
+        ARegister(in=Ain,load=loadA,out=Aout,out[0..14]=addressM);
+        // instruction[12] is the 'a' bit in the instruction which specifies whether the comp will concern M or not
+        Mux16(a=Aout,b=inM,sel=instruction[12],out=AMout);
+
+        //Prepare for ALU, if it is not an instruction, just return D
+        And(a=instruction[11],b=instruction[15],out=zx);//c1
+        And(a=instruction[10],b=instruction[15],out=nx);//c2
+        Or(a=instruction[9],b=notinstruction,out=zy);//c3
+        Or(a=instruction[8],b=notinstruction,out=ny);//c4
+        And(a=instruction[7],b=instruction[15],out=f);//c5
+        And(a=instruction[6],b=instruction[15],out=no);//c6
+
+        ALU(x=Dout,y=AMout,zx=zx,nx=nx,zy=zy,ny=ny,f=f,no=no,out=outM,out=ALUout,zr=zero,ng=neg);
+
+        // when it is an instruction, write M 
+        // When instruction[3](d3) = 1, it means that the instruction is a memory write instruction
+        And(a=instruction[15],b=instruction[3],out=writeM);
+
+        //RegisterD,when it is an instruction, load D
+        And(a=instruction[15],b=instruction[4],out=loadD);//d2
+        DRegister(in=ALUout,load=loadD,out=Dout);
+
+        //Prepare for jump
+        //get positive
+        Or(a=zero,b=neg,out=notpos);
+        Not(in=notpos,out=pos);
+
+        And(a=instruction[0],b=pos,out=j3);//j3
+        And(a=instruction[1],b=zero,out=j2);//j2
+        And(a=instruction[2],b=neg,out=j1);//j1
+
+        Or(a=j1,b=j2,out=j12);
+        Or(a=j12,b=j3,out=j123);
+
+        And(a=j123,b=instruction[15],out=jump);
+
+        //when jump,load Aout 
+        PC(in=Aout,load=jump,reset=reset,inc=true,out[0..14]=pc);
+        }
