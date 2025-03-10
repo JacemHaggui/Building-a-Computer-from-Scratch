@@ -2,7 +2,7 @@
 
 This repository contains my work and progress for the [Nand2Tetris](https://www.nand2tetris.org) course, a project-based journey from building basic NAND logic gates to creating a functional computer.
 
-![](Jacem Haggui-NAND2TETRIS.png)
+![](JacemHaggui-NAND2TETRIS.png)
 
 ## About the Course  
 Nand2Tetris is a hands-on course that takes you through the fundamental concepts of computer science and hardware engineering. By the end, participants will have designed and implemented a computer from scratch, including its hardware architecture, machine language, assembler, virtual machine, and high-level programming language.  
